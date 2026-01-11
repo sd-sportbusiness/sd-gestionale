@@ -5,6 +5,7 @@ import type { Product, Category, Brand, Typology, Contact } from '../../types';
 import { Upload, X, Image as ImageIcon, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { compressImage, formatFileSize, type CompressionResult } from '../../lib/imageCompression';
+import { uploadProductImage, compressImage as compressForUpload } from '../../lib/storage';
 
 interface ProductFormProps {
   product?: Product | null;
@@ -57,6 +58,7 @@ export function ProductForm({
   });
 
   const [imageData, setImageData] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [compressionInfo, setCompressionInfo] = useState<CompressionResult | null>(null);
   const [isCompressing, setIsCompressing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -93,6 +95,7 @@ export function ProductForm({
         online_link: product.online_link || '',
       });
       setImageData(product.image_data || null);
+setImageUrl(product.image_url || null);
     } else if (initialBarcode) {
       setFormData((prev) => ({ ...prev, barcode: initialBarcode }));
     }
