@@ -152,7 +152,7 @@ export function ContactForm({ contact, onSubmit, onCancel, fixedType }: ContactF
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Citta</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">Città</label>
           <input
             type="text"
             value={formData.city}
