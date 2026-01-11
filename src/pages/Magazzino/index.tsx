@@ -164,7 +164,7 @@ export function Magazzino() {
               onChange={(e) => setAvailabilityFilter(e.target.value)}
               className="px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all outline-none"
             >
-              <option value="">Tutte le disponibilita</option>
+              <option value="">Tutte le disponibilità</option>
               <option value="both">Negozio + Online</option>
               <option value="store_only">Solo Negozio</option>
               <option value="online_only">Solo Online</option>
