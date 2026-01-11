@@ -181,6 +181,7 @@ setImageUrl(product.image_url || null);
 
   const handleRemoveImage = useCallback(() => {
     setImageData(null);
+    setImageUrl(null);
     setCompressionInfo(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -292,8 +293,8 @@ setImageUrl(product.image_url || null);
       size: isAbbigliamento ? (formData.size || null) : null,
       flavor: isIntegratori ? (formData.flavor || null) : null,
       online_link: formData.online_link || null,
-      image_data: imageData,
-      image_url: null,
+      image_data: imageUrl ? null : imageData,
+image_url: imageUrl,
     });
   };
 
@@ -567,11 +568,11 @@ setImageUrl(product.image_url || null);
                 </p>
               </div>
             </div>
-          ) : imageData ? (
+          ) : (imageData || imageUrl) ? (
             <div className="relative">
               <div className="relative w-full h-48 bg-gray-100 rounded-xl overflow-hidden">
                 <img
-                  src={imageData}
+                  src={imageUrl || imageData || ''}
                   alt="Anteprima"
                   className="w-full h-full object-contain"
                 />
