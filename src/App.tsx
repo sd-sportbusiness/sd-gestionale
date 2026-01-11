@@ -71,14 +71,7 @@ function App() {
       <Routes>
         <Route path="/login" element={user ? <Navigate to={user.role === 'client' ? '/catalogo' : '/dashboard'} replace /> : <Login />} />
 
-        <Route
-          path="/catalogo"
-          element={
-            <ProtectedRoute allowedRoles={['client']}>
-              <Catalogo />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/catalogo" element={<Catalogo />} />
 
         <Route
           element={
