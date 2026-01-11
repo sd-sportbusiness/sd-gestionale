@@ -493,7 +493,7 @@ export function ProductForm({
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Quantita in stock
+              Quantità in stock
             </label>
             <input
               type="number"
@@ -519,7 +519,7 @@ export function ProductForm({
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1.5">
-            Disponibilita *
+            Disponibilità *
           </label>
           <select
             value={formData.availability}
