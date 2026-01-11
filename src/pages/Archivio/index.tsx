@@ -792,7 +792,7 @@ export function Archivio() {
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm p-6 lg:col-span-2">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Prodotti piu venduti</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Prodotti più venduti</h3>
               {topProducts.length === 0 ? (
                 <p className="text-gray-400 text-center py-8">Nessun dato disponibile</p>
               ) : (
