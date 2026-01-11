@@ -109,40 +109,42 @@ setImageUrl(product.image_url || null);
   const isIntegratori = selectedCategory?.name?.toLowerCase() === 'integratori';
 
   const handleFileChange = useCallback(async (file: File) => {
-    console.log('File selezionato:', file.name, 'Tipo:', file.type, 'Dimensione:', file.size);
+  console.log('File selezionato:', file.name, 'Tipo:', file.type, 'Dimensione:', file.size);
 
-    if (!ACCEPTED_TYPES.includes(file.type)) {
-      toast.error(`Formato non supportato (${file.type}). Usa JPG, PNG o WEBP.`);
-      return;
+  if (!ACCEPTED_TYPES.includes(file.type)) {
+    toast.error(`Formato non supportato (${file.type}). Usa JPG, PNG o WEBP.`);
+    return;
+  }
+
+  if (file.size > MAX_FILE_SIZE) {
+    toast.error(`Immagine troppo grande (${formatFileSize(file.size)}). Massimo 10MB.`);
+    return;
+  }
+
+  setIsCompressing(true);
+
+  try {
+    // Comprimi l'immagine
+    const compressedFile = await compressForUpload(file, 800, 0.7);
+    
+    // Upload su Supabase Storage
+    const tempId = product?.id || `temp-${Date.now()}`;
+    const url = await uploadProductImage(compressedFile, tempId);
+
+    if (url) {
+      setImageUrl(url);
+      setImageData(null);
+      toast.success('Immagine caricata con successo');
+    } else {
+      toast.error('Errore nel caricamento immagine');
     }
-
-    if (file.size > MAX_FILE_SIZE) {
-      toast.error(`Immagine troppo grande (${formatFileSize(file.size)}). Massimo 10MB.`);
-      return;
-    }
-
-    setIsCompressing(true);
-
-    try {
-      const result = await compressImage(file, 1200, 0.75);
-
-      console.log('Compressione completata:', result);
-
-      if (result.compressedSize > 500 * 1024) {
-        toast.success(`Immagine caricata: ${formatFileSize(result.compressedSize)} (riduzione ${result.compressionRatio}%)`);
-      } else {
-        toast.success(`Immagine caricata: ${formatFileSize(result.compressedSize)}`);
-      }
-
-      setImageData(result.compressedBase64);
-      setCompressionInfo(result);
-    } catch (error) {
-      console.error('Errore nella compressione:', error);
-      toast.error(`Errore nel caricamento: ${error instanceof Error ? error.message : 'Errore sconosciuto'}`);
-    } finally {
-      setIsCompressing(false);
-    }
-  }, []);
+  } catch (error) {
+    console.error('Errore nel caricamento:', error);
+    toast.error(`Errore: ${error instanceof Error ? error.message : 'Errore sconosciuto'}`);
+  } finally {
+    setIsCompressing(false);
+  }
+}, [product?.id]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
