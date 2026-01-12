@@ -425,12 +425,12 @@ export function Vendite() {
           * { margin: 0; padding: 0; box-sizing: border-box; }
           body {
             font-family: 'Courier New', Courier, monospace;
-            font-size: 11px; line-height: 1.3;
+            font-size: 14px; line-height: 1.4;
             width: 80mm; padding: 4mm;
             background: white; color: black;
           }
-          img { max-height: 40px; width: auto; display: block; margin: 0 auto; }
-          .receipt-line { font-family: 'Courier New', Courier, monospace; font-size: 10px; line-height: 1; letter-spacing: -0.5px; }
+          img { max-height: 50px; width: auto; display: block; margin: 0 auto; }
+          .receipt-line { font-family: 'Courier New', Courier, monospace; font-size: 12px; line-height: 1; letter-spacing: -0.5px; }
           .receipt-header, .receipt-info, .receipt-footer { text-align: center; }
           .receipt-items, .receipt-totals { margin: 8px 0; }
           .flex { display: flex; }
@@ -438,13 +438,15 @@ export function Vendite() {
           .text-center { text-align: center; }
           .font-bold { font-weight: bold; }
           .font-medium { font-weight: 500; }
-          .text-lg { font-size: 14px; }
-          .text-base { font-size: 12px; }
-          .text-sm { font-size: 11px; }
-          .text-xs { font-size: 10px; }
+          .text-xl { font-size: 20px; }
+          .text-lg { font-size: 18px; }
+          .text-base { font-size: 16px; }
+          .text-sm { font-size: 14px; }
+          .text-xs { font-size: 12px; }
           .mb-1 { margin-bottom: 4px; }
           .mb-2 { margin-bottom: 8px; }
           .mb-3 { margin-bottom: 12px; }
+          .mb-4 { margin-bottom: 16px; }
           .mt-1 { margin-top: 4px; }
           .mt-2 { margin-top: 8px; }
           .my-1 { margin-top: 4px; margin-bottom: 4px; }
@@ -499,22 +501,22 @@ export function Vendite() {
           }
           body {
             font-family: 'Courier New', Courier, monospace;
-            font-size: 11px;
-            line-height: 1.3;
+            font-size: 14px;
+            line-height: 1.4;
             width: 80mm;
             padding: 4mm;
             background: white;
             color: black;
           }
           img {
-            max-height: 40px;
+            max-height: 50px;
             width: auto;
             display: block;
             margin: 0 auto;
           }
           .receipt-line {
             font-family: 'Courier New', Courier, monospace;
-            font-size: 10px;
+            font-size: 12px;
             line-height: 1;
             letter-spacing: -0.5px;
           }
@@ -550,24 +552,29 @@ export function Vendite() {
           .font-medium {
             font-weight: 500;
           }
+          .text-xl {
+            font-size: 20px;
+          }
           .text-lg {
-            font-size: 14px;
+            font-size: 18px;
           }
           .text-base {
-            font-size: 12px;
+            font-size: 16px;
           }
           .text-sm {
-            font-size: 11px;
+            font-size: 14px;
           }
           .text-xs {
-            font-size: 10px;
+            font-size: 12px;
           }
           .mb-1 { margin-bottom: 4px; }
           .mb-2 { margin-bottom: 8px; }
           .mb-3 { margin-bottom: 12px; }
+          .mb-4 { margin-bottom: 16px; }
           .mt-1 { margin-top: 4px; }
           .mt-2 { margin-top: 8px; }
           .my-1 { margin-top: 4px; margin-bottom: 4px; }
+          .ml-2 { margin-left: 8px; }
           .ml-4 { margin-left: 16px; }
           .mr-2 { margin-right: 8px; }
           .line-through {
