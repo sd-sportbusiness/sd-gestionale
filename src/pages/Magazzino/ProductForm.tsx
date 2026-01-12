@@ -467,7 +467,7 @@ image_url: imageUrl,
               <input
                 type="number"
                 step="0.01"
-                min="0"
+                min="-999"
                 value={formData.purchase_price}
                 onChange={(e) =>
                   setFormData({ ...formData, purchase_price: parseFloat(e.target.value) || 0 })
