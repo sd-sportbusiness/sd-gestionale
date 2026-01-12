@@ -155,11 +155,6 @@ export function Vendite() {
     const product = getProductByBarcode(barcodeInput.trim());
 
     if (product) {
-      if (product.stock <= 0) {
-        toast.error('Prodotto non disponibile in magazzino');
-        setBarcodeInput('');
-        return;
-      }
 
       const priceListId = selectedPriceListId || defaultPriceList?.id || '';
       const unitPrice = getProductPrice(product.id, priceListId, product.sale_price);
@@ -168,11 +163,7 @@ export function Vendite() {
 
       if (existingIndex >= 0) {
         const currentQty = cart[existingIndex].quantity;
-        if (currentQty >= product.stock) {
-          toast.error('Quantita massima raggiunta');
-          setBarcodeInput('');
-          return;
-        }
+      
         setCart(
           cart.map((item, idx) =>
             idx === existingIndex ? { ...item, quantity: item.quantity + 1 } : item
@@ -195,10 +186,7 @@ export function Vendite() {
       setCart(cart.filter((_, idx) => idx !== index));
     } else {
       const item = cart[index];
-      if (quantity > item.product.stock) {
-        toast.error('Quantita non disponibile');
-        return;
-      }
+   
       setCart(cart.map((item, idx) => (idx === index ? { ...item, quantity } : item)));
     }
   };
