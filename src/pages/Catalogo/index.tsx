@@ -32,7 +32,7 @@ export function Catalogo() {
       const matchesTypology = !typologyFilter || product.typology_id === typologyFilter;
       const matchesAvailability = !availabilityFilter || product.availability === availabilityFilter;
 
-      return matchesSearch && matchesCategory && matchesTypology && matchesAvailability;
+      return product.stock > 0 && matchesSearch && matchesCategory && matchesTypology && matchesAvailability;
     });
   }, [products, searchQuery, categoryFilter, typologyFilter, availabilityFilter]);
 
