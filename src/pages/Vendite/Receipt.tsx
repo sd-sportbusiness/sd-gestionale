@@ -60,20 +60,20 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
             </div>
           )}
           <div className="receipt-line">================================================</div>
-          <h1 className="font-bold text-lg mt-2">
+          <h1 className="font-bold text-xl mt-2">
             {settings?.company_name || 'SD BENESSERE & SPORT'}
           </h1>
-          <p className="text-sm">{settings?.tagline || 'Since 1984'}</p>
-          {settings?.address && <p className="text-xs mt-1">{settings.address}</p>}
-          {settings?.phone && <p className="text-xs">Tel: {settings.phone}</p>}
-          {settings?.vat && <p className="text-xs">P.IVA: {settings.vat}</p>}
+          <p className="text-base">{settings?.tagline || 'Since 1984'}</p>
+          {settings?.address && <p className="text-sm mt-1">{settings.address}</p>}
+          {settings?.phone && <p className="text-sm">Tel: {settings.phone}</p>}
+          {settings?.vat && <p className="text-sm">P.IVA: {settings.vat}</p>}
           <div className="receipt-line mt-2">------------------------------------------------</div>
         </div>
 
         <div className="receipt-info text-center mb-3">
-          <h2 className="font-bold text-base">SCONTRINO PROFORMA</h2>
-          <p className="text-sm">N° #{String(sale.sale_number).padStart(4, '0')}</p>
-          <p className="text-xs">
+          <h2 className="font-bold text-lg">SCONTRINO PROFORMA</h2>
+          <p className="text-base">N° #{String(sale.sale_number).padStart(4, '0')}</p>
+          <p className="text-sm">
             Data: {format(new Date(sale.created_at), 'dd/MM/yyyy', { locale: it })} {' '}
             Ora: {format(new Date(sale.created_at), 'HH:mm', { locale: it })}
           </p>
@@ -82,7 +82,7 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
 
         {sale.customer && (
           <div className="mb-3">
-            <p className="text-sm">
+            <p className="text-base">
               Cliente: {sale.customer.company_name}
             </p>
             <div className="receipt-line mt-2">------------------------------------------------</div>
@@ -91,7 +91,7 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
 
         {sale.price_list && (
           <div className="mb-3">
-            <p className="text-sm font-medium">
+            <p className="text-base font-medium">
               Listino: {sale.price_list.name}
             </p>
             <div className="receipt-line mt-2">------------------------------------------------</div>
@@ -111,8 +111,8 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
 
             return (
               <div key={item.id} className="mb-4">
-                <p className="font-medium text-sm mb-1">{item.product_name}</p>
-                <div className="text-xs space-y-0.5 ml-2">
+                <p className="font-medium text-base mb-1">{item.product_name}</p>
+                <div className="text-sm space-y-0.5 ml-2">
                   {hasListDiscount ? (
                     <>
                       <div className="flex justify-between">
@@ -161,14 +161,14 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
           <div className="receipt-line">------------------------------------------------</div>
         </div>
 
-        <div className="receipt-totals mb-3 text-sm">
+        <div className="receipt-totals mb-3 text-base">
           <div className="flex justify-between mb-1">
             <span>SUBTOTALE:</span>
             <span>{formatCurrency(sale.subtotal)}</span>
           </div>
           {cartDiscounts.length > 0 && (
             <div className="mb-2">
-              <p className="text-xs text-gray-500 mb-1">Sconti carrello:</p>
+              <p className="text-sm text-gray-500 mb-1">Sconti carrello:</p>
               {cartDiscounts.map((discount, idx) => (
                 <div key={idx} className="flex justify-between text-green-600 ml-2">
                   <span>Codice {discount.code} ({discount.type === 'percentage' ? `-${discount.value}%` : `-${formatCurrency(discount.value)}`}):</span>
@@ -184,7 +184,7 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
             </div>
           )}
           <div className="receipt-line my-1">------------------------------------------------</div>
-          <div className="flex justify-between font-bold text-base">
+          <div className="flex justify-between font-bold text-lg">
             <span>TOTALE:</span>
             <span>{formatCurrency(sale.total)}</span>
           </div>
@@ -192,12 +192,12 @@ export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
         </div>
 
         <div className="receipt-footer text-center">
-          <p className="font-medium text-sm">Grazie per l'acquisto!</p>
+          <p className="font-medium text-base">Grazie per l'acquisto!</p>
           {settings?.website && (
-            <p className="text-xs mt-1">{settings.website}</p>
+            <p className="text-sm mt-1">{settings.website}</p>
           )}
           <div className="receipt-line mt-2">================================================</div>
-          <p className="text-xs mt-2 text-gray-500">Documento proforma</p>
+          <p className="text-sm mt-2 text-gray-500">Documento proforma</p>
         </div>
       </div>
     );
