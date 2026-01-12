@@ -287,6 +287,7 @@ export function Listini() {
                               <div className="flex items-center justify-end gap-2">
                                 <span className="text-gray-500">€</span>
                                 <input
+                                  key={`${product.id}-${selectedList.id}`}
                                   type="number"
                                   step="0.01"
                                   min="0"
