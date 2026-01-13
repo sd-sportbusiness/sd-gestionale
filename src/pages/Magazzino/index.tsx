@@ -32,6 +32,7 @@ export function Magazzino() {
   const [categoryFilter, setCategoryFilter] = useState('');
   const [typologyFilter, setTypologyFilter] = useState('');
   const [availabilityFilter, setAvailabilityFilter] = useState('');
+  const [supplierFilter, setSupplierFilter] = useState('');
   const [showLowStock, setShowLowStock] = useState(searchParams.get('filter') === 'lowstock');
 
   const [showProductModal, setShowProductModal] = useState(false);
@@ -51,11 +52,12 @@ export function Magazzino() {
       const matchesCategory = !categoryFilter || product.category_id === categoryFilter;
       const matchesTypology = !typologyFilter || product.typology_id === typologyFilter;
       const matchesAvailability = !availabilityFilter || product.availability === availabilityFilter;
+      const matchesSupplier = !supplierFilter || product.supplier_id === supplierFilter;
       const matchesLowStock = !showLowStock || product.stock <= product.min_stock;
 
-      return matchesSearch && matchesCategory && matchesTypology && matchesAvailability && matchesLowStock;
+      return matchesSearch && matchesCategory && matchesTypology && matchesAvailability && matchesSupplier && matchesLowStock;
     });
-  }, [products, searchQuery, categoryFilter, typologyFilter, availabilityFilter, showLowStock]);
+  }, [products, searchQuery, categoryFilter, typologyFilter, availabilityFilter, supplierFilter, showLowStock]);
 
   const handleAddProduct = () => {
     setEditingProduct(null);
@@ -118,7 +120,7 @@ export function Magazzino() {
 
       <div className="p-8">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             <div className="relative">
               <Search
                 size={20}
@@ -155,6 +157,19 @@ export function Magazzino() {
               {typologies.map((typ) => (
                 <option key={typ.id} value={typ.id}>
                   {typ.name}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={supplierFilter}
+              onChange={(e) => setSupplierFilter(e.target.value)}
+              className="px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all outline-none"
+            >
+              <option value="">Tutti i fornitori</option>
+              {suppliers.map((sup) => (
+                <option key={sup.id} value={sup.id}>
+                  {sup.company_name}
                 </option>
               ))}
             </select>
@@ -342,7 +357,7 @@ export function Magazzino() {
         <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
           <p>
             {filteredProducts.length} prodotti{' '}
-            {searchQuery || categoryFilter || typologyFilter || availabilityFilter || showLowStock ? '(filtrati)' : ''}
+            {searchQuery || categoryFilter || typologyFilter || availabilityFilter || supplierFilter || showLowStock ? '(filtrati)' : ''}
           </p>
           <p>
             Valore totale magazzino:{' '}
