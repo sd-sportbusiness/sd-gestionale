@@ -13,13 +13,14 @@ interface ProductFormProps {
   brands: Brand[];
   typologies: Typology[];
   suppliers: Contact[];
-  onSubmit: (data: Partial<Product>) => void;
+  onSubmit: (data: Partial<Product>, saveToInventory?: boolean) => void;
   onCancel: () => void;
   onAddBrand: (name: string) => Promise<Brand | null>;
   onAddTypology: (name: string) => Promise<Typology | null>;
   onAddCategory: (name: string) => Promise<Category | null>;
   onAddSupplier: (data: Partial<Contact>) => Promise<Contact | null>;
   initialBarcode?: string;
+  showSaveToInventoryOption?: boolean;
 }
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -38,6 +39,7 @@ export function ProductForm({
   onAddCategory,
   onAddSupplier,
   initialBarcode,
+  showSaveToInventoryOption = false,
 }: ProductFormProps) {
   const [formData, setFormData] = useState({
     barcode: initialBarcode || '',
@@ -73,6 +75,7 @@ export function ProductForm({
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [showSupplierModal, setShowSupplierModal] = useState(false);
   const [isAddingSupplier, setIsAddingSupplier] = useState(false);
+  const [saveToInventory, setSaveToInventory] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -95,7 +98,7 @@ export function ProductForm({
         online_link: product.online_link || '',
       });
       setImageData(product.image_data || null);
-setImageUrl(product.image_url || null);
+      setImageUrl(product.image_url || null);
     } else if (initialBarcode) {
       setFormData((prev) => ({ ...prev, barcode: initialBarcode }));
     }
@@ -109,42 +112,42 @@ setImageUrl(product.image_url || null);
   const isIntegratori = selectedCategory?.name?.toLowerCase() === 'integratori';
 
   const handleFileChange = useCallback(async (file: File) => {
-  console.log('File selezionato:', file.name, 'Tipo:', file.type, 'Dimensione:', file.size);
+    console.log('File selezionato:', file.name, 'Tipo:', file.type, 'Dimensione:', file.size);
 
-  if (!ACCEPTED_TYPES.includes(file.type)) {
-    toast.error(`Formato non supportato (${file.type}). Usa JPG, PNG o WEBP.`);
-    return;
-  }
-
-  if (file.size > MAX_FILE_SIZE) {
-    toast.error(`Immagine troppo grande (${formatFileSize(file.size)}). Massimo 10MB.`);
-    return;
-  }
-
-  setIsCompressing(true);
-
-  try {
-    // Comprimi l'immagine
-    const compressedFile = await compressForUpload(file, 800, 0.7);
-    
-    // Upload su Supabase Storage
-    const tempId = product?.id || `temp-${Date.now()}`;
-    const url = await uploadProductImage(compressedFile, tempId);
-
-    if (url) {
-      setImageUrl(url);
-      setImageData(null);
-      toast.success('Immagine caricata con successo');
-    } else {
-      toast.error('Errore nel caricamento immagine');
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      toast.error(`Formato non supportato (${file.type}). Usa JPG, PNG o WEBP.`);
+      return;
     }
-  } catch (error) {
-    console.error('Errore nel caricamento:', error);
-    toast.error(`Errore: ${error instanceof Error ? error.message : 'Errore sconosciuto'}`);
-  } finally {
-    setIsCompressing(false);
-  }
-}, [product?.id]);
+
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error(`Immagine troppo grande (${formatFileSize(file.size)}). Massimo 10MB.`);
+      return;
+    }
+
+    setIsCompressing(true);
+
+    try {
+      // Comprimi l'immagine
+      const compressedFile = await compressForUpload(file, 800, 0.7);
+      
+      // Upload su Supabase Storage
+      const tempId = product?.id || `temp-${Date.now()}`;
+      const url = await uploadProductImage(compressedFile, tempId);
+
+      if (url) {
+        setImageUrl(url);
+        setImageData(null);
+        toast.success('Immagine caricata con successo');
+      } else {
+        toast.error('Errore nel caricamento immagine');
+      }
+    } catch (error) {
+      console.error('Errore nel caricamento:', error);
+      toast.error(`Errore: ${error instanceof Error ? error.message : 'Errore sconosciuto'}`);
+    } finally {
+      setIsCompressing(false);
+    }
+  }, [product?.id]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -294,8 +297,8 @@ setImageUrl(product.image_url || null);
       flavor: isIntegratori ? (formData.flavor || null) : null,
       online_link: formData.online_link || null,
       image_data: imageUrl ? null : imageData,
-image_url: imageUrl,
-    });
+      image_url: imageUrl,
+    }, saveToInventory);
   };
 
   return (
@@ -478,7 +481,7 @@ image_url: imageUrl,
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Prezzo di vendita
+              Prezzo di vendita *
             </label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">€</span>
@@ -491,6 +494,7 @@ image_url: imageUrl,
                   setFormData({ ...formData, sale_price: parseFloat(e.target.value) || 0 })
                 }
                 className="w-full pl-8 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all outline-none"
+                required
               />
             </div>
           </div>
@@ -645,6 +649,29 @@ image_url: imageUrl,
           )}
         </div>
 
+        {showSaveToInventoryOption && (
+          <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={saveToInventory}
+                onChange={(e) => setSaveToInventory(e.target.checked)}
+                className="w-5 h-5 text-primary-500 focus:ring-primary-500 rounded"
+              />
+              <div>
+                <span className="text-sm font-medium text-gray-900">
+                  Salva nel magazzino
+                </span>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {saveToInventory 
+                    ? 'Il prodotto verrà aggiunto al magazzino in modo permanente'
+                    : 'Il prodotto verrà usato solo per questa transazione (temporaneo)'}
+                </p>
+              </div>
+            </label>
+          </div>
+        )}
+
         <div className="flex gap-3 pt-4">
           <button
             type="button"
@@ -657,7 +684,7 @@ image_url: imageUrl,
             type="submit"
             className="flex-1 px-4 py-2.5 bg-primary-500 text-white font-medium rounded-xl hover:bg-primary-600 transition-colors"
           >
-            {product ? 'Aggiorna' : 'Aggiungi'}
+            {product ? 'Aggiorna' : (showSaveToInventoryOption ? 'Aggiungi al carrello' : 'Aggiungi')}
           </button>
         </div>
       </form>
