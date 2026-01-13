@@ -4,6 +4,7 @@ import { Modal } from '../../components/Modal';
 import { Receipt } from './Receipt';
 import { ReturnReceipt } from './ReturnReceipt';
 import { ProductDiscountModal } from './ProductDiscountModal';
+import { ProductForm } from '../Magazzino/ProductForm';
 import { useProducts } from '../../hooks/useProducts';
 import { useContacts } from '../../hooks/useContacts';
 import { usePriceLists } from '../../hooks/usePriceLists';
@@ -11,8 +12,9 @@ import { useDiscountCodes } from '../../hooks/useDiscountCodes';
 import { useSales } from '../../hooks/useSales';
 import { useReturns } from '../../hooks/useReturns';
 import { useCompanySettings } from '../../hooks/useCompanySettings';
+import { useTypologies } from '../../hooks/useTypologies';
 import { useCartStore } from '../../store/cartStore';
-import type { Sale, AppliedDiscount, Return, ReturnCartItem, ReturnReason } from '../../types';
+import type { Sale, AppliedDiscount, Return, ReturnCartItem, ReturnReason, Product } from '../../types';
 import {
   Barcode,
   Plus,
@@ -40,13 +42,15 @@ const RETURN_REASONS: { value: ReturnReason; label: string }[] = [
 ];
 
 export function Vendite() {
-  const { getProductByBarcode, fetchProducts } = useProducts();
-  const { customers } = useContacts();
+  const { products, categories, brands, getProductByBarcode, fetchProducts, addProduct, addBrand, addCategory } =
+    useProducts();
+  const { customers, suppliers, addContact } = useContacts();
   const { activePriceLists, defaultPriceList, getProductPrice } = usePriceLists();
   const { validateCode } = useDiscountCodes();
   const { createSale } = useSales();
   const { createReturn } = useReturns();
   const { settings } = useCompanySettings();
+  const { typologies, createTypology } = useTypologies();
 
   const {
     cart,
@@ -78,6 +82,10 @@ export function Vendite() {
   const [returnNotes, setReturnNotes] = useState('');
   const [showReturnReceipt, setShowReturnReceipt] = useState(false);
   const [completedReturn, setCompletedReturn] = useState<Return | null>(null);
+
+  // State per il modal nuovo prodotto
+  const [showNewProductModal, setShowNewProductModal] = useState(false);
+  const [notFoundBarcode, setNotFoundBarcode] = useState('');
 
   const barcodeInputRef = useRef<HTMLInputElement>(null);
 
@@ -155,15 +163,12 @@ export function Vendite() {
     const product = getProductByBarcode(barcodeInput.trim());
 
     if (product) {
-
       const priceListId = selectedPriceListId || defaultPriceList?.id || '';
       const unitPrice = getProductPrice(product.id, priceListId, product.sale_price);
 
       const existingIndex = cart.findIndex((item) => item.product.id === product.id);
 
       if (existingIndex >= 0) {
-        const currentQty = cart[existingIndex].quantity;
-      
         setCart(
           cart.map((item, idx) =>
             idx === existingIndex ? { ...item, quantity: item.quantity + 1 } : item
@@ -173,11 +178,72 @@ export function Vendite() {
         setCart([...cart, { product, quantity: 1, unit_price: unitPrice }]);
       }
       toast.success(`${product.name} aggiunto`);
+      setBarcodeInput('');
     } else {
-      toast.error('Prodotto non trovato');
+      // Prodotto non trovato - apri modal per crearlo
+      setNotFoundBarcode(barcodeInput.trim());
+      setShowNewProductModal(true);
+      setBarcodeInput('');
     }
 
-    setBarcodeInput('');
+    barcodeInputRef.current?.focus();
+  };
+
+  const handleNewProductSubmit = async (data: Partial<Product>, saveToInventory?: boolean) => {
+    if (saveToInventory) {
+      // Salva nel magazzino
+      const newProduct = await addProduct(data);
+      if (newProduct) {
+        // Aggiungi al carrello
+        const priceListId = selectedPriceListId || defaultPriceList?.id || '';
+        const unitPrice = getProductPrice(newProduct.id, priceListId, newProduct.sale_price);
+        
+        if (mode === 'sale') {
+          setCart([...cart, { product: newProduct, quantity: 1, unit_price: unitPrice }]);
+        } else {
+          setReturnCart([...returnCart, { product: newProduct, quantity: 1, unit_price: newProduct.sale_price }]);
+        }
+        toast.success(`${newProduct.name} aggiunto al magazzino e al carrello`);
+      }
+    } else {
+      // Prodotto temporaneo - crea un oggetto fittizio
+      const tempProduct: Product = {
+        id: `temp-${Date.now()}`,
+        name: data.name || 'Prodotto temporaneo',
+        barcode: data.barcode || null,
+        brand: null,
+        brand_id: null,
+        description: data.description || null,
+        category_id: data.category_id || null,
+        category: null,
+        typology_id: data.typology_id || null,
+        typology: null,
+        supplier_id: null,
+        supplier: null,
+        size: data.size || null,
+        flavor: data.flavor || null,
+        purchase_price: data.purchase_price || 0,
+        sale_price: data.sale_price || 0,
+        stock: 0,
+        min_stock: 0,
+        availability: 'store_only',
+        online_link: null,
+        image_data: null,
+        image_url: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      if (mode === 'sale') {
+        setCart([...cart, { product: tempProduct, quantity: 1, unit_price: tempProduct.sale_price }]);
+      } else {
+        setReturnCart([...returnCart, { product: tempProduct, quantity: 1, unit_price: tempProduct.sale_price }]);
+      }
+      toast.success(`${tempProduct.name} aggiunto al carrello (temporaneo)`);
+    }
+
+    setShowNewProductModal(false);
+    setNotFoundBarcode('');
     barcodeInputRef.current?.focus();
   };
 
@@ -185,8 +251,6 @@ export function Vendite() {
     if (quantity <= 0) {
       setCart(cart.filter((_, idx) => idx !== index));
     } else {
-      const item = cart[index];
-   
       setCart(cart.map((item, idx) => (idx === index ? { ...item, quantity } : item)));
     }
   };
@@ -317,11 +381,14 @@ export function Vendite() {
         setReturnCart([...returnCart, { product, quantity: 1, unit_price: product.sale_price }]);
       }
       toast.success(`${product.name} aggiunto al reso`);
+      setBarcodeInput('');
     } else {
-      toast.error('Prodotto non trovato');
+      // Prodotto non trovato - apri modal per crearlo
+      setNotFoundBarcode(barcodeInput.trim());
+      setShowNewProductModal(true);
+      setBarcodeInput('');
     }
 
-    setBarcodeInput('');
     barcodeInputRef.current?.focus();
   };
 
@@ -702,12 +769,24 @@ export function Vendite() {
                           item.discounts
                         );
                         const hasDiscount = item.discounts && item.discounts.length > 0;
+                        const isTemporary = item.product.id.startsWith('temp-');
 
                         return (
-                          <tr key={item.product.id} className="hover:bg-gray-50">
+                          <tr key={item.product.id} className={`hover:bg-gray-50 ${isTemporary ? 'bg-amber-50/50' : ''}`}>
                             <td className="py-3 px-4">
-                              <p className="font-medium text-gray-900">{item.product.name}</p>
-                              <p className="text-sm text-gray-500">{item.product.barcode}</p>
+                              <div className="flex items-center gap-2">
+                                <div>
+                                  <p className="font-medium text-gray-900">
+                                    {item.product.name}
+                                    {isTemporary && (
+                                      <span className="ml-2 px-1.5 py-0.5 text-xs bg-amber-100 text-amber-700 rounded">
+                                        Temporaneo
+                                      </span>
+                                    )}
+                                  </p>
+                                  <p className="text-sm text-gray-500">{item.product.barcode}</p>
+                                </div>
+                              </div>
                               {hasDiscount && (
                                 <div className="mt-1 flex flex-wrap gap-1">
                                   {item.discounts?.map((discount) => (
@@ -804,10 +883,18 @@ export function Vendite() {
                       <tbody className="divide-y divide-amber-100">
                         {returnCart.map((item, index) => {
                           const itemTotal = item.unit_price * item.quantity;
+                          const isTemporary = item.product.id.startsWith('temp-');
                           return (
-                            <tr key={item.product.id} className="hover:bg-amber-50">
+                            <tr key={item.product.id} className={`hover:bg-amber-50 ${isTemporary ? 'bg-amber-100/50' : ''}`}>
                               <td className="py-3 px-4">
-                                <p className="font-medium text-gray-900">{item.product.name}</p>
+                                <p className="font-medium text-gray-900">
+                                  {item.product.name}
+                                  {isTemporary && (
+                                    <span className="ml-2 px-1.5 py-0.5 text-xs bg-amber-200 text-amber-800 rounded">
+                                      Temporaneo
+                                    </span>
+                                  )}
+                                </p>
                                 <p className="text-sm text-gray-500">{item.product.barcode}</p>
                               </td>
                               <td className="py-3 px-4 text-center text-gray-600">
@@ -1103,6 +1190,43 @@ export function Vendite() {
           }
         />
       )}
+
+      {/* Modal per nuovo prodotto non trovato */}
+      <Modal
+        isOpen={showNewProductModal}
+        onClose={() => {
+          setShowNewProductModal(false);
+          setNotFoundBarcode('');
+          barcodeInputRef.current?.focus();
+        }}
+        title="Prodotto non trovato"
+        size="lg"
+      >
+        <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+          <p className="text-sm text-amber-800">
+            Il codice <strong>{notFoundBarcode}</strong> non è presente nel magazzino. 
+            Compila i dati per aggiungerlo.
+          </p>
+        </div>
+        <ProductForm
+          categories={categories}
+          brands={brands}
+          typologies={typologies}
+          suppliers={suppliers}
+          initialBarcode={notFoundBarcode}
+          showSaveToInventoryOption={true}
+          onSubmit={handleNewProductSubmit}
+          onCancel={() => {
+            setShowNewProductModal(false);
+            setNotFoundBarcode('');
+            barcodeInputRef.current?.focus();
+          }}
+          onAddBrand={addBrand}
+          onAddTypology={createTypology}
+          onAddCategory={addCategory}
+          onAddSupplier={addContact}
+        />
+      </Modal>
 
       <Modal
         isOpen={showReceipt}
