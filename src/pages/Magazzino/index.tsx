@@ -53,7 +53,7 @@ export function Magazzino() {
       const matchesTypology = !typologyFilter || product.typology_id === typologyFilter;
       const matchesAvailability = !availabilityFilter || product.availability === availabilityFilter;
       const matchesSupplier = !supplierFilter || product.supplier_id === supplierFilter;
-      const matchesLowStock = !showLowStock || product.stock <= product.min_stock;
+      const matchesLowStock = !showLowStock || product.stock < product.min_stock;
 
       return matchesSearch && matchesCategory && matchesTypology && matchesAvailability && matchesSupplier && matchesLowStock;
     });
@@ -112,7 +112,7 @@ export function Magazzino() {
     }
   };
 
-  const lowStockCount = products.filter((p) => p.stock <= p.min_stock).length;
+  const lowStockCount = products.filter((p) => p.stock < p.min_stock).length;
 
   return (
     <div>
@@ -256,7 +256,7 @@ export function Magazzino() {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {filteredProducts.map((product) => {
-                  const isLowStock = product.stock <= product.min_stock;
+                  const isLowStock = product.stock < product.min_stock;
                   const availabilityBadge = getAvailabilityBadge(product.availability);
                   return (
                     <tr
